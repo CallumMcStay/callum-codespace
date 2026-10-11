@@ -1,0 +1,14 @@
+{
+  "name": "k8s-basics",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false
+    },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "minikube": "none",
+      "helm": "none"
+    }
+  },
+  "postCreateCommand": "curl -Lo /tmp/kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64 && sudo install -m 0755 /tmp/kind /usr/local/bin/kind && rm /tmp/kind"
+}
