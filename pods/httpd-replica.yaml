@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: httpd-replica
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      name: httpd-pod
+      labels:
+        app: httpd
+    spec:
+      containers:
+      - name: httpd-pod
+        image: httpd:latest
+        ports:
+          - containerPort: 80
