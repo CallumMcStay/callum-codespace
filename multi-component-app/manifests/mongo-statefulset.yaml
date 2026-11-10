@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: mongo-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-pod
+  template:
+    metadata:
+      labels:
+        app: mongo-pod
+    spec:
+      # Run on the worker that holds the data.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: mongo-data
+                    operator: In
+                    values: ["true"]
+      # Runs to completion before the mongo container starts.
+      initContainers:
+      - name: fix-permissions
+        image: mongo:7.0.35
+        # Give the data folder to user 1000, whoever created it.
+        command: ["chown", "-R", "1000:1000", "/data/db"]
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /data/db
+          name: mongo-volume
+      containers:
+      - image: mongo:7.0.35
+        name: mongo
+        # Run as the owner of the data folder on your codespace (see below).
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: "admin"
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: "secret"
+        ports:
+        - containerPort: 27017
+        # Ready when the server accepts connections on the pod's address.
+        readinessProbe:
+          tcpSocket:
+            port: 27017
+          periodSeconds: 5
+        volumeMounts:
+        - mountPath: /data/db
+          name: mongo-volume
+      volumes:
+      - name: mongo-volume
+        persistentVolumeClaim:
+          claimName: mongo-pvc
