@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-depl
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: express-pod
+  template:
+    metadata:
+      labels:
+        app: express-pod
+    spec:
+      containers:
+      - image: mongo-express:1.0.2
+        name: express
+        env:
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          value: "admin"
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          value: "secret"
+        - name: ME_CONFIG_MONGODB_SERVER
+          value: "mongo-0.mongo-svc"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-svc
+spec:
+  ports:
+  - port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: express-pod
